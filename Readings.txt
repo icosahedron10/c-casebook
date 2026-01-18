@@ -1,0 +1,268 @@
+Intro to C (Beej’s Guide to C) — Reading Plan (Aligned to Casebook Projects)
+Version: v2 (reordered to match weekly project prerequisites; all chapters remain required)
+
+How to use this file
+- Every chapter listed is REQUIRED reading.
+- “Depth guidance” tells you how hard to lean in:
+  - Read carefully: slow down, take notes, try the mini-practice.
+  - Read for recognition: aim to understand the main ideas and vocabulary; don’t sweat full mastery.
+
+-------------------------------------------------------------------------------
+
+Week 1 — Project 1A (Casebook v0: program shape + toolchain)
+Reading (required)
+- Ch 1: Introduction (pp. 1–4) — Read for recognition
+- Ch 2: Hello, World! (pp. 5–10) — Read carefully
+
+Concepts you should be able to use by week’s end
+- Compile + run a C program
+- Know what a translation unit is (at a high level)
+- Understand “compile errors” vs “runtime behavior” vs “logic bugs”
+
+Mini-practice (10–20 minutes total)
+- Compile with warnings enabled; fix any warnings.
+- Change the greeting program to accept a hard-coded name and print it.
+
+Project tie-in
+- Project 1, Week A: repo layout + build command + a menu scaffold (no storage yet)
+
+-------------------------------------------------------------------------------
+
+Week 2 — Project 1B (Casebook v0: control flow + basic input)
+Reading (required)
+- Ch 3: Variables and Statements (pp. 11–26) — Read carefully
+
+Concepts you should be able to use by week’s end
+- Basic types, assignment, expressions
+- if/else, switch, loops
+- Basic I/O use (enough to drive a menu)
+
+Mini-practice
+- Write a small menu that loops until “quit”.
+- Add one integer input and validate it (simple: reject non-choices).
+
+Project tie-in
+- Project 1, Week B: implement menu actions as stubs + enforce “program flow contract”
+
+-------------------------------------------------------------------------------
+
+Week 3 — Project 2A (Casebook v1: functions + clean structure)
+Reading (required)
+- Ch 4: Functions (pp. 27–31) — Read carefully
+- Ch 5: Pointers, basic (pp. 32–39) — Read for recognition
+
+Concepts you should be able to use by week’s end
+- Break a program into functions with clear responsibilities
+- Pass values vs pass pointers for “output parameters”
+- Use return codes/status to signal success/failure
+
+Mini-practice
+- Refactor Week 2 menu so each option is handled by a separate function.
+- Write one function that updates an integer via pointer (e.g., increment).
+
+Project tie-in
+- Project 2, Week A: refactor actions into functions + introduce invariants (IDs, valid references)
+
+-------------------------------------------------------------------------------
+
+Week 4 — Project 2B (Casebook v1: arrays + strings + fixed-capacity storage)
+Reading (required)
+- Ch 6: Arrays (pp. 40–48) — Read carefully
+- Ch 7: Strings (pp. 49–54) — Read carefully
+
+Concepts you should be able to use by week’s end
+- Store multiple records with arrays (fixed capacity)
+- Work with C strings safely (length limits, null terminator)
+- Avoid common string pitfalls (overflows, missing terminator)
+
+Mini-practice
+- Write a function that safely copies a string into a fixed-size buffer.
+- Store 3 names in an array; print them back.
+
+Project tie-in
+- Project 2, Week B: implement fixed-capacity clients/transactions + basic listing
+
+-------------------------------------------------------------------------------
+
+Week 5 — Project 3A (Casebook v2: structs for real records)
+Reading (required)
+- Ch 8: Structs (pp. 55–58) — Read carefully
+
+Concepts you should be able to use by week’s end
+- Define record types with struct
+- Access members; pass structs by value vs pointer
+- Understand why structs reduce parallel-array complexity
+
+Mini-practice
+- Create a struct with 2–3 fields and write a print function for it.
+
+Project tie-in
+- Project 3, Week A: migrate arrays → struct-based records (still fixed-capacity)
+
+-------------------------------------------------------------------------------
+
+Week 6 — Project 3B (Casebook v2: persistence via file I/O)
+Reading (required)
+- Ch 9: File I/O (pp. 59–67) — Read carefully
+
+Concepts you should be able to use by week’s end
+- Open/read/write/close files
+- Handle file errors (fail loudly, don’t silently corrupt)
+- Define a simple, documented text format
+
+Mini-practice
+- Write a tiny program that saves 2 lines to a file and loads them back.
+
+Project tie-in
+- Project 3, Week B: load/save clients and transactions + fixtures vs runtime data policy
+
+-------------------------------------------------------------------------------
+
+Week 7 — Project 4A (Casebook v3: typedef + pointer arithmetic as tools)
+Reading (required)
+- Ch 10: typedef (pp. 68–71) — Read carefully
+- Ch 11: Pointers II, Arithmetic (pp. 72–80) — Read for recognition
+
+Concepts you should be able to use by week’s end
+- Use typedef to make code easier to read and refactor
+- Iterate arrays with pointer arithmetic (when appropriate)
+- Understand pointer + integer meaning in terms of element size
+
+Mini-practice
+- typedef a struct name and rewrite signatures to use it.
+- Walk an int array using a pointer and print values.
+
+Project tie-in
+- Project 4, Week A: introduce typedefs + prep storage layer for resizing
+
+-------------------------------------------------------------------------------
+
+Week 8 — Project 4B (Casebook v3: manual memory allocation + ownership)
+Reading (required)
+- Ch 12: Manual Memory Allocation (pp. 81–89) — Read carefully
+- Ch 13: Scope (pp. 90–93) — Read for recognition
+
+Concepts you should be able to use by week’s end
+- malloc/realloc/free patterns
+- count vs capacity; growth strategy
+- “ownership” rules (who allocates, who frees)
+- Use scope/static to limit visibility and reduce accidental coupling
+
+Mini-practice
+- Allocate an array of N ints, fill it, resize it, then free it.
+
+Project tie-in
+- Project 4, Week B: replace fixed limits with dynamic arrays + define free/cleanup behavior
+
+-------------------------------------------------------------------------------
+
+Week 9 — Project 5A (Casebook v4: type discipline)
+Reading (required)
+- Ch 14: Types II (pp. 94–106) — Read carefully
+
+Concepts you should be able to use by week’s end
+- When to use size_t vs int
+- Signed/unsigned gotchas
+- “Make the compiler help you” through better types
+
+Mini-practice
+- Audit your code: mark sizes and counts as size_t and fix warnings.
+
+Project tie-in
+- Project 5, Week A: type audit + deterministic reporting calculations
+
+-------------------------------------------------------------------------------
+
+Week 10 — Project 5B (Casebook v4: conversions + enums + bit flags)
+Reading (required)
+- Ch 15: Types III (pp. 107–115) — Read carefully
+- Ch 16: Types IV (pp. 116–123) — Read for recognition
+- Ch 22: Enumerated Types (enum) (pp. 184–187) — Read carefully
+- Ch 24: Bitwise Operations (pp. 199–200) — Read carefully
+
+Concepts you should be able to use by week’s end
+- Conversions and why they matter (especially parsing and arithmetic)
+- Use enums for categories/states
+- Use bit flags for compact “has/has-not” properties
+
+Mini-practice
+- Write a function that parses an int from a string (using strtol) and validates range.
+- Define an enum for 3 states and print names for each state.
+- Set/clear/test a bit flag.
+
+Project tie-in
+- Project 5, Week B: robust numeric parsing + enum categories + flags + persistence defaults
+
+-------------------------------------------------------------------------------
+
+Week 11 — Project 6A (Casebook v5: multifile structure)
+Reading (required)
+- Ch 17: Multifile Projects (pp. 124–128) — Read carefully
+
+Concepts you should be able to use by week’s end
+- .h vs .c responsibilities
+- Header guards (introduced here; reinforced next week with preprocessor)
+- Clear module interfaces
+
+Mini-practice
+- Split a tiny program into 2 files with one header; compile successfully.
+
+Project tie-in
+- Project 6, Week A: split Casebook into modules + add a Makefile baseline
+
+-------------------------------------------------------------------------------
+
+Week 12 — Project 6B (Casebook v5: outside environment + preprocessor)
+Reading (required)
+- Ch 18: The Outside Environment (pp. 129–138) — Read for recognition
+- Ch 19: The C Preprocessor (pp. 139–160) — Read carefully
+
+Concepts you should be able to use by week’s end
+- Command-line args at a basic level
+- Environment variables (awareness + simple use)
+- Preprocessor directives: #include, #define, conditional compilation
+- Why header guards work
+
+Mini-practice
+- Add a --data-dir CLI arg (or stub it) and print the chosen directory.
+- Add a DEBUG macro that toggles extra logging.
+
+Project tie-in
+- Project 6, Week B: CLI/config + debug/asan targets + preprocessor cleanup
+
+-------------------------------------------------------------------------------
+
+Week 13 — Project 7A (Casebook v6: structs II + strings II for stability)
+Reading (required)
+- Ch 20: structs II (pp. 161–178) — Read carefully
+- Ch 21: Characters and Strings II (pp. 179–183) — Read carefully
+
+Concepts you should be able to use by week’s end
+- More realistic struct patterns (nested, pointers, design considerations)
+- Safer string handling strategies and pitfalls
+- Treating output formats as stable “interfaces”
+
+Mini-practice
+- Document one file format and write a strict parser outline (no full implementation required).
+
+Project tie-in
+- Project 7, Week A: validation hardening + stable report formatting + fixture-driven checks
+
+-------------------------------------------------------------------------------
+
+Week 14 — Project 7B (Casebook v6: pointers III + final polish)
+Reading (required)
+- Ch 23: Pointers III (pp. 188–198) — Read carefully
+
+Concepts you should be able to use by week’s end
+- Pointer-to-pointer patterns for “modify caller’s pointer”
+- APIs for insertion/deletion in dynamic arrays/lists (conceptual level)
+- Final memory safety review mindset
+
+Mini-practice
+- Write a function that frees a pointer and sets it to NULL via pointer-to-pointer.
+
+Project tie-in
+- Project 7, Week B: deletion/refactor patterns + final memory audit + “ship it” polish
+
+-------------------------------------------------------------------------------

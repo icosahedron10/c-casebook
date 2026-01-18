@@ -1,0 +1,122 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+# Ignored default folder with query files
+/queries/
+# Datasource local storage ignored files
+/dataSources/
+/dataSources.local.xml
+# Editor-based HTTP Client requests
+/httpRequests/
+# -------------------------------------------------
+# Build artifacts
+# -------------------------------------------------
+*.o
+*.obj
+*.lo
+*.la
+*.a
+*.lib
+*.so
+*.so.*
+*.dylib
+*.dll
+*.exe
+*.out
+*.elf
+
+# -------------------------------------------------
+# Precompiled headers
+# -------------------------------------------------
+*.gch
+*.pch
+
+# -------------------------------------------------
+# Dependency files (gcc -MMD)
+# -------------------------------------------------
+*.d
+
+# -------------------------------------------------
+# Build directories
+# -------------------------------------------------
+build/
+build-*/
+bin/
+obj/
+dist/
+
+# -------------------------------------------------
+# CMake
+# -------------------------------------------------
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CTestTestfile.cmake
+*.cmake.user
+compile_commands.json
+
+# -------------------------------------------------
+# Autotools
+# -------------------------------------------------
+autom4te.cache/
+aclocal.m4
+config.log
+config.status
+configure
+configure.scan
+depcomp
+install-sh
+missing
+mkinstalldirs
+Makefile
+Makefile.in
+ltmain.sh
+
+# -------------------------------------------------
+# Make
+# -------------------------------------------------
+*.make
+*.mak
+
+# -------------------------------------------------
+# Debugging / profiling
+# -------------------------------------------------
+*.gdb
+*.valgrind
+gmon.out
+vgcore.*
+perf.data*
+core
+core.*
+
+# -------------------------------------------------
+# Editors and IDEs
+# -------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.#*
+*.kate-swp
+
+# -------------------------------------------------
+# OS files
+# -------------------------------------------------
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# -------------------------------------------------
+# Logs and temporary files
+# -------------------------------------------------
+*.log
+*.tmp
+*.temp
+
+# -------------------------------------------------
+# Environment files
+# -------------------------------------------------
+.env
+.env.*

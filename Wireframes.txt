@@ -1,0 +1,118 @@
+Wireframes.txt — Casebook (Intro to C) Scaffolding Index
+Version: v3 (adds WF-07A)
+
+Purpose
+This file lists OPTIONAL “wireframe sets” you can use to reduce startup time on a deliverable.
+A wireframe set provides:
+- file/module layout (what files exist)
+- public APIs (function prototypes, structs, constants)
+- responsibility notes + invariants
+- TODO markers for implementation
+
+Wireframes do NOT provide:
+- full implementations
+- finished algorithms
+- completed parsing/report logic
+
+How to use wireframes in this course
+1) Read the relevant Project Week plan first.
+2) Decide if you want scaffolding.
+3) If yes, copy the wireframe set into your project folder as a starting point.
+4) Implement the TODOs yourself.
+5) You may modify wireframes as needed, but keep the stated invariants.
+
+Conventions used below
+- Paths are relative to a single project folder (e.g., project-07-casebook/).
+- “Public API” means what other .c files are allowed to call.
+- Anything marked “internal” should be static inside its .c file.
+
+-------------------------------------------------------------------------------
+Wireframe Set Index
+
+- WF-00: Template Set (copy/paste starter format)
+- WF-06A: Multifile Split (headers + modules)
+- WF-06B: Makefile Targets (baseline + asan/debug)
+- WF-07A: Deterministic Reports + Fixture Runner (manual check outline) [NEW]
+
+-------------------------------------------------------------------------------
+WF-00 — Template Set (starter format only)
+(unchanged; use as a generic starter)
+
+-------------------------------------------------------------------------------
+WF-06A — Multifile Split (Project 6 Week A)
+(unchanged; defines model.h, storage.h, persistence.h, reports.h, ui.h skeletons)
+
+-------------------------------------------------------------------------------
+WF-06B — Makefile Targets (Project 6 Week B)
+(unchanged; provides Makefile shape for run/debug/asan/clean)
+
+-------------------------------------------------------------------------------
+WF-07A — Deterministic Reports + Fixture Runner (Project 7 Week A)
+Goal
+- Make report output stable and comparable across runs.
+- Provide a low-effort way to test against known-good datasets without building a test framework.
+
+Part 1: Report output conventions (document + follow)
+Choose a format and keep it stable. Recommended rules:
+- Every report prints a heading line.
+- Every row prints fields in a fixed order.
+- Use integer cents consistently (no locale-dependent formatting).
+- One record per line; every line ends with '\n'.
+- Never rely on pointer addresses or unordered iteration that could vary.
+
+Example heading + row shapes (illustrative)
+(Use these as inspiration; finalize your own and document it in README.)
+
+Report B (Totals by type):
+TOTALS_BY_TYPE
+RETAINER|<cents>
+EXPENSE|<cents>
+PAYMENT|<cents>
+
+Report D (Flagged clients):
+FLAGGED_CLIENTS
+<client_id>|<name>|<contact>|flags=<hex_or_dec>
+
+Key stability note
+- If you must iterate, use the stored append order.
+- Do NOT sort in place; if you ever sort, do it on a temporary index array (and keep it short-lived).
+
+Part 2: Fixture-run routine (manual, deterministic)
+Target layout (recommended)
+data/
+  fixtures/
+    clients.txt
+    transactions.txt
+  runtime/
+    clients.txt
+    transactions.txt
+
+Workflow outline
+1) Reset runtime:
+   - delete data/runtime/clients.txt
+   - delete data/runtime/transactions.txt
+2) Copy fixtures into runtime:
+   - cp data/fixtures/clients.txt data/runtime/clients.txt
+   - cp data/fixtures/transactions.txt data/runtime/transactions.txt
+3) Build:
+   - make
+4) Run and execute:
+   - list clients
+   - list transactions
+   - run all 4 reports
+5) Compare output:
+   - manual compare to a saved “expected output” text file OR
+   - keep a short checklist of expected totals/lines in README.
+
+Optional add-on (still low-effort)
+Create an “expected output” file:
+tests/
+  expected_reports.txt
+
+Then you can run:
+- ./casebook < tests/demo_input.txt > tests/actual_output.txt
+and manually diff them (or just eyeball).
+
+Important
+- This is NOT a full test framework.
+- It’s a repeatable demo/check that catches regressions quickly.

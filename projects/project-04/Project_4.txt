@@ -1,0 +1,312 @@
+PROJECT 4 (Weeks 7–8)
+Casebook v3: Dynamic Memory + Growth (Remove Fixed Capacities)
+
+Purpose
+This milestone removes the last major “toy constraint” in Casebook: fixed maximum capacities.
+You will convert arrays of structs into dynamically sized arrays managed with:
+- malloc
+- realloc
+- free
+
+This deliverable is about stability and discipline:
+- count vs capacity
+- predictable growth rules
+- safe resizing patterns
+- clean ownership (who allocates / who frees)
+
+-------------------------------------------------------------------------------
+Prerequisites (Readings)
+Week 7: Ch 10 (typedef), Ch 11 (Pointer arithmetic)
+Week 8: Ch 12 (Manual memory allocation), Ch 13 (Scope)
+
+-------------------------------------------------------------------------------
+What You Are Building (v3)
+User-visible behavior must remain the same as Project 3:
+- Add/list clients
+- Add/list transactions
+- Save/load from text files with the same formats
+- Enforce referential integrity (transactions reference existing clients)
+
+New behavior in v3 (internal only)
+- Clients + transactions are stored in dynamic arrays that grow automatically as needed.
+
+Out of scope (explicit)
+- New features (reports, enums, CLI flags, etc.)
+- Perfect recovery from every malformed file line (skip with warning is fine)
+- Multifile modularization + Makefile (Project 6)
+
+-------------------------------------------------------------------------------
+Directory Layout (Exact)
+Create a new, isolated folder:
+
+project-04-casebook/
+  README.md
+  src/
+    main.c
+  data/
+    fixtures/
+      clients.txt
+      transactions.txt
+    runtime/
+      (generated files live here)
+
+Rules
+- All C source code remains in src/main.c.
+- You may commit fixture data under data/fixtures/.
+- You should NOT commit runtime-generated data under data/runtime/ (add to .gitignore).
+
+Compatibility rule
+- File formats must match Project 3 exactly (same delimiter + field order).
+- File locations may follow your Project 3 choice (recommended: data/runtime/…).
+
+Allowed shortcut
+- If Project 3 used a simpler data/clients.txt style, you may keep that, but document it in README and remain consistent.
+
+-------------------------------------------------------------------------------
+Create / Modify List
+Create:
+- project-04-casebook/README.md
+- project-04-casebook/src/main.c
+- project-04-casebook/data/fixtures/clients.txt
+- project-04-casebook/data/fixtures/transactions.txt
+- project-04-casebook/data/runtime/  (directory)
+
+Modify:
+- None outside project-04-casebook/
+
+-------------------------------------------------------------------------------
+Build Requirements
+From project-04-casebook/:
+
+gcc -Wall -Wextra -Wpedantic -std=c17 -g -o casebook src/main.c
+
+Optional debug build (recommended when you have Chapter 12 read)
+gcc -Wall -Wextra -Wpedantic -std=c17 -g -fsanitize=address -fno-omit-frame-pointer -o casebook src/main.c
+
+Definition of done for build
+- Compiles with zero warnings.
+
+-------------------------------------------------------------------------------
+Core Invariants (Contracts)
+Program flow
+- Program loops until Quit.
+- Invalid input must not crash the program.
+- After any action (success or failure), the program returns to the menu.
+
+IDs (unchanged)
+- Client IDs:
+  - Start at 1 if no saved data exists
+  - Increment by 1 ONLY when a client is successfully added
+  - Never reused
+- Transaction IDs:
+  - Start at 1 if no saved data exists
+  - Increment by 1 ONLY when a transaction is successfully added
+  - Never reused
+
+Persistence + IDs
+- Load IDs exactly as stored.
+- After load:
+  - next_client_id = max_client_id_loaded + 1 (or 1 if none)
+  - next_txn_id = max_txn_id_loaded + 1 (or 1 if none)
+
+Referential integrity
+- A transaction’s client_id MUST match an existing client_id.
+- Reject user-added transactions that reference missing clients.
+- On load: if a transaction references a missing client_id, skip it with a warning.
+
+Dynamic array correctness
+At all times:
+- client_count <= client_capacity
+- txn_count <= txn_capacity
+- Writes never occur past allocated capacity.
+
+-------------------------------------------------------------------------------
+Dynamic Storage Design (Target State)
+You will replace fixed-size arrays:
+
+Client clients[MAX_CLIENTS];
+Transaction txns[MAX_TXNS];
+
+with dynamic arrays:
+
+typedef struct Client Client;
+typedef struct Transaction Transaction;
+
+Client *clients;
+size_t client_count;
+size_t client_capacity;
+
+Transaction *txns;
+size_t txn_count;
+size_t txn_capacity;
+
+Interpretation
+- count = number of valid records
+- capacity = allocated slots
+
+-------------------------------------------------------------------------------
+Growth Policy (Required)
+You must implement a predictable policy.
+
+Minimum requirements
+- Initial capacity must be non-zero (recommend: 4 or 8)
+- When adding a record and count == capacity:
+  - grow capacity (recommend doubling: capacity *= 2)
+  - realloc to new capacity
+  - only commit the pointer if realloc succeeds
+
+-------------------------------------------------------------------------------
+Ownership Rules (Non-Negotiable)
+- main() (or an init routine) is responsible for:
+  - initializing pointers/count/capacity
+  - freeing all allocated arrays at shutdown
+
+- Realloc safety rule (required)
+  - Always store realloc result in a temporary pointer:
+    tmp = realloc(ptr, new_bytes);
+    if (!tmp) { handle failure without losing ptr; }
+    ptr = tmp;
+
+- Free rule
+  - Every allocation is freed exactly once.
+  - After free, set pointer to NULL (recommended).
+
+Allocation failure rule
+- If malloc/realloc fails:
+  - print a clear error message
+  - leave the program in a safe state
+  - it is acceptable to exit after freeing what you already own
+
+-------------------------------------------------------------------------------
+Week A (Week 7) — Refactor prep (typedef + count/capacity plumbing)
+Goal
+- Prepare the codebase so Week B’s malloc/realloc work is straightforward.
+- No actual dynamic allocation is required this week.
+
+Tasks
+1) Introduce typedefs (lightweight)
+- typedef your structs:
+  - typedef struct Client Client;
+  - typedef struct Transaction Transaction;
+
+2) Convert counts to size_t (prep)
+- client_count and txn_count become size_t
+- Any loop indices over counts should become size_t as well
+- Keep IDs as int (they’re identifiers, not sizes)
+
+3) Introduce “capacity” variables (not used yet)
+- Add client_capacity and txn_capacity variables (size_t)
+- Set them to your planned initial capacity constants (e.g., 4)
+
+4) Isolate “append a record” logic behind helper functions (key time saver)
+Create helper functions (signatures only this week is OK) like:
+- int append_client(...);
+- int append_transaction(...);
+
+These helpers should:
+- validate “room exists” (for now: check against a placeholder)
+- write the new record at index count
+- increment count only on success
+
+The point: Week B will only change how “room exists” is achieved (dynamic growth),
+while the rest of the program stays stable.
+
+5) Pointer arithmetic practice (optional)
+- In list functions, optionally iterate with pointers instead of indexing:
+  - for (Client *c = clients; c < clients + client_count; c++) { ... }
+This is optional but aligns with Week 7 reading.
+
+Verification checklist
+- Program still behaves exactly like Project 3 when run against your fixture data.
+- No warnings introduced by type changes.
+
+Minimum viable implementation (allowed shortcuts)
+- It’s acceptable if capacity variables exist but are not meaningful yet.
+- It’s acceptable to keep strict limits temporarily (Week B removes them).
+
+-------------------------------------------------------------------------------
+Week B (Week 8) — Implement dynamic arrays (malloc/realloc/free)
+Goal
+- Remove fixed maximum capacities completely.
+- Arrays grow automatically during:
+  - user “add” operations
+  - file load operations
+
+Tasks
+1) Initialize dynamic arrays
+At program startup:
+- set counts to 0
+- set capacities to INITIAL_CAPACITY
+- allocate:
+  clients = malloc(client_capacity * sizeof(Client))
+  txns    = malloc(txn_capacity    * sizeof(Transaction))
+- handle allocation failures safely
+
+2) Implement ensure-capacity helpers (recommended)
+- int ensure_client_capacity(...);
+- int ensure_txn_capacity(...);
+
+Rules:
+- If count < capacity: do nothing (success)
+- If count == capacity:
+  - compute new capacity (double)
+  - realloc with temp pointer
+  - update capacity only on success
+
+3) Update add operations to grow safely
+- Before writing the new record at index count, call ensure_capacity().
+- Only increment IDs and counts on success.
+
+4) Update load-on-start to grow safely
+Pick ONE approach (either is acceptable):
+A) “Grow as you load” (recommended for low effort)
+- Start with small capacity, call ensure_capacity() each time before appending.
+B) “Count then allocate exactly”
+- First pass counts records, second pass parses.
+(A is simpler and recommended.)
+
+5) Implement clean shutdown
+- Before exit: save files (same as Project 3)
+- free(clients), free(txns)
+- set pointers to NULL (recommended)
+
+6) Scope hygiene (from Chapter 13)
+- Mark internal helper functions as static.
+- Keep global variables to a minimum (ideally none; pass pointers around).
+
+Verification checklist
+- Add many clients/transactions beyond your original fixed limits; growth works.
+- Save → restart → load works.
+- Deleting runtime files resets the program.
+- With ASan build, normal usage does not report leaks/crashes.
+
+Minimum viable implementation (allowed shortcuts)
+- You may exit on allocation failure after printing an error and freeing what you own.
+- You may keep numeric parsing simple (still integer cents).
+- You may skip malformed lines on load (warn + continue).
+
+-------------------------------------------------------------------------------
+README.md Requirements
+Your README must include:
+- What v3 changes (dynamic arrays, growth policy)
+- Initial capacity + growth rule (e.g., double)
+- Allocation failure policy (exit vs recover)
+- Where persistence files live and how to reset runtime data
+- Known limitations
+
+-------------------------------------------------------------------------------
+Common Errors to Avoid
+- Confusing count and capacity (or updating one but not the other)
+- Losing the original pointer on realloc failure
+- Writing past allocated memory during load
+- Forgetting to free on exit (or freeing twice)
+- Accidentally changing file formats while refactoring
+
+-------------------------------------------------------------------------------
+Wireframes
+No wireframes are required for Project 4.
+
+If you want scaffolding, WF-00 from Wireframes.txt can be used to outline:
+- ensure_capacity() helpers
+- init/free routines
+…but keep this deliverable single-file for simplicity.

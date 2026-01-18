@@ -1,0 +1,289 @@
+PROJECT 7 (Weeks 13–14)
+Casebook v6: Consolidation, Stability, and Final Reports
+
+Purpose
+This final milestone is a consolidation and polish pass. You will preserve all Project 6 behavior and structure, and then:
+- add exactly two additional reports (4 total across the project)
+- harden stability (input, bounds, allocation, state)
+- document an end-to-end demo workflow in README
+
+Scope control (non-negotiable)
+- Do NOT add new persistent fields.
+- Do NOT redesign the architecture.
+- Do NOT add “nice-to-have” features that expand scope.
+This is about confidence and correctness.
+
+-------------------------------------------------------------------------------
+Prerequisites (Readings)
+Week 13: Ch 20 (Structs II), Ch 21 (Chars/Strings II)
+Week 14: Ch 23 (Pointers III)
+
+-------------------------------------------------------------------------------
+Regression Contract (What Must Stay Working)
+Everything from Project 6 must still work exactly as before:
+- multifile build (Makefile) with at least: make, make clean, make run, make debug, make asan
+- dynamic arrays + growth policy
+- add/list clients
+- add/list transactions (with enum type)
+- client flags (bit flags) and at least one UI action that edits flags
+- persistence load-on-start and save-on-exit (same locations and formats)
+- exactly two reports from Project 5 (same behavior + stable output formats)
+
+-------------------------------------------------------------------------------
+Directory Layout (Exact)
+Create a new, isolated folder:
+
+project-07-casebook/
+  README.md
+  Makefile
+  src/
+    main.c
+    model.h
+    ui.h
+    ui.c
+    storage.h
+    storage.c
+    persistence.h
+    persistence.c
+    reports.h
+    reports.c
+  data/
+    fixtures/
+      clients.txt
+      transactions.txt
+    runtime/
+      (generated files live here)
+
+Rules
+- Keep module responsibilities aligned with Project 6:
+  - model: shared types (structs/enums/flags)
+  - storage: owns in-memory state (Store) and mutations
+  - persistence: load/save only
+  - reports: read-only reports only
+  - ui: menu + prompting + input parsing
+- You may add at most ONE new module only if absolutely necessary.
+  - If you do, document why in README.
+
+-------------------------------------------------------------------------------
+Create / Modify List
+Create:
+- project-07-casebook/README.md
+- project-07-casebook/Makefile
+- project-07-casebook/src/* (same set as Project 6)
+- project-07-casebook/data/fixtures/clients.txt
+- project-07-casebook/data/fixtures/transactions.txt
+- project-07-casebook/data/runtime/ (directory)
+
+Modify:
+- None outside project-07-casebook/
+
+-------------------------------------------------------------------------------
+Build Requirements
+From project-07-casebook/:
+
+make
+make clean
+make run
+make debug
+make asan
+
+Compiler standard/flags (required baseline)
+- -std=c17 -Wall -Wextra -Wpedantic -g
+- zero warnings
+
+ASan build (recommended)
+- -fsanitize=address -fno-omit-frame-pointer
+
+Definition of done for build
+- make builds with zero warnings
+- make clean works
+- make asan builds successfully
+
+-------------------------------------------------------------------------------
+Core Invariants (Contracts)
+These must remain true while you refactor/harden.
+
+Program flow
+- Program loops until Quit.
+- Invalid input must not crash the program.
+- After any action (success or failure), the program returns to the menu.
+
+IDs
+- Client IDs increment ONLY on successful add; never reused.
+- Transaction IDs increment ONLY on successful add; never reused.
+- IDs loaded from disk remain as stored.
+- next IDs after load are max+1.
+
+Referential integrity
+- User-added transactions must reference an existing client_id.
+- Loaded transactions referencing missing clients are skipped with a warning.
+
+Dynamic array correctness
+- count <= capacity always holds
+- no out-of-bounds writes during add or load
+
+Reports
+- Reports must not mutate state
+- Reports must not allocate long-lived heap memory
+- Output must be deterministic for a given dataset
+- Once you finalize formatting, do not change it later
+
+Persistence robustness
+- Missing data files do not crash the program (treat as empty).
+- Empty files are handled gracefully.
+- Malformed lines may be skipped with a warning.
+
+-------------------------------------------------------------------------------
+Week A (Week 13) — Add two reports + stabilize output + fixture-driven checking
+Goal
+- Add exactly two additional reports (total four).
+- Make report output “API-like”: stable ordering and formatting.
+- Establish a simple fixture-driven verification routine.
+
+Reports requirement (controlled scope)
+You must end with exactly FOUR total reports:
+- the two from Project 5 (unchanged)
+- PLUS exactly two additional reports chosen from the list below
+
+Choose TWO reports you did NOT implement in Project 5:
+Report A: Client ledger summary
+- Prompt for client_id
+- Totals by transaction type + net
+
+Report B: Totals by transaction type (global)
+- Totals for RETAINER, EXPENSE, PAYMENT
+
+Report C: Transactions for a client
+- Prompt for client_id
+- Print that client’s transactions in append order
+
+Report D: Flagged clients list
+- Print clients with FLAGGED set (respect archived policy)
+
+Report E: Archived clients list
+- Print clients with ARCHIVED set
+
+Constraints (required)
+- Reports are separate functions in reports.c with declarations in reports.h.
+- Reports are read-only.
+- Reports are deterministic: same dataset → same output every run.
+- Reports must not sort “in place” or rearrange Store state.
+
+Stable output conventions (required)
+Define and keep:
+- heading lines (exact spelling)
+- field order
+- numeric formatting (cents as integer is fine)
+- newline behavior (each line ends with '\n')
+
+Fixture-driven checks (required, low-effort)
+- Maintain fixtures under data/fixtures/.
+- Provide a documented method to test against fixtures:
+  - copy fixtures into runtime location (or point program at fixture dir)
+  - run all four reports
+  - compare output manually to expected results
+
+(If you want scaffolding for this, use WF-07A in Wireframes.txt.)
+
+Verification checklist
+- Exactly four reports exist and all run.
+- Report output is deterministic and documented.
+- No changes to persistence formats.
+- Project 6 behavior still works.
+
+Minimum viable implementation (allowed shortcuts)
+- Reports may print cents as integers.
+- Reports may share small helper functions (static) inside reports.c.
+- If client_id is invalid, print a short error and return to menu.
+
+-------------------------------------------------------------------------------
+Week B (Week 14) — Stability and correctness pass (input, bounds, memory, state)
+Goal
+- Harden the code so it behaves predictably under common failure modes.
+- Reduce duplication and clarify ownership without rewriting architecture.
+
+Required stability pass checklist
+1) Input handling
+- No crashes on invalid menu input (letters, blank line, huge numbers).
+- Clear errors for invalid numeric input (client_id, amount, selection).
+- Line-based input does not skip prompts due to leftover newlines.
+- You may standardize input via ONE helper in ui.c (recommended).
+
+2) Bounds and capacity
+- No out-of-bounds writes when adding records.
+- count <= capacity always holds.
+- Loading from files must not overflow buffers or arrays.
+
+3) Memory ownership
+- All heap memory is freed exactly once on exit.
+- realloc never loses the original pointer on failure.
+- No use-after-free or double-free during normal usage.
+
+4) Persistence robustness
+- Missing files → treat as empty, no crash.
+- Empty files → treat as empty, no crash.
+- Malformed lines → warn + skip.
+
+5) Pointers III usage (targeted, not forced)
+Use pointer-to-pointer patterns where they actually help. One recommended place:
+- If storage owns pointers internally, implement a helper that can “free and NULL” safely
+  (e.g., for shutdown or re-init).
+
+Verification checklist
+- Build with make asan and run normal scenarios; no sanitizer complaints.
+- Manual “abuse tests” do not crash:
+  - invalid menu choices repeatedly
+  - attempt transaction for missing client
+  - run reports with empty dataset
+  - start with missing data files
+
+Minimum viable implementation (allowed shortcuts)
+- It is acceptable to exit the program on unrecoverable allocation failure
+  after printing a clear message and freeing owned memory.
+- You do not need a unit-test framework.
+
+-------------------------------------------------------------------------------
+README.md Requirements (Final)
+Your README must include:
+
+1) Module overview
+- 1–2 sentences per module: ui, storage, persistence, reports, model
+
+2) Reports
+- List all four reports and how to run them
+
+3) Reset instructions
+- How to reset runtime state (delete runtime files, or clear runtime dir)
+
+4) Testing against known-good datasets
+- How to run against fixtures
+- What “deterministic output” means in your project
+
+5) Final Demo Script (required)
+A step-by-step script demonstrating the full workflow:
+- Build with make
+- Run the program
+- Add at least one client
+- Add at least two transactions
+- Run at least one report
+- Exit (trigger save)
+- Run again and show load works
+
+6) Known limitations
+- delimiter rule (no escaping)
+- parsing assumptions (if any remain)
+- any intentional shortcuts
+
+-------------------------------------------------------------------------------
+Common Errors to Avoid
+- Adding new features “because it’s the final deliverable”
+- Reports that silently modify state (sorting in place, toggling flags, etc.)
+- Changing file formats or locations late
+- Ignoring warnings (treat warnings as bugs)
+- Using globals to bypass module boundaries
+
+-------------------------------------------------------------------------------
+Wireframes (Recommended)
+Use WF-07A from Wireframes.txt to:
+- standardize report output conventions
+- outline a simple fixture-run routine (no real test framework)

@@ -1,0 +1,259 @@
+PROJECT 6 (Weeks 11–12)
+Casebook v5: Multi-File Organization + Makefile Build Discipline
+
+Purpose
+This milestone turns Casebook into a “real C project”:
+- multiple .c/.h modules with clean interfaces
+- disciplined compilation + linking via a Makefile
+- POSIX-style persistence using file descriptors
+- no behavior changes from Project 5 (same user-facing features)
+
+Scope control (important)
+- You are not adding new features.
+- You are reorganizing existing code into modules and proving you understand compilation/linking boundaries.
+
+POSIX Integration
+- Project 6 replaces stdio-based persistence with POSIX file descriptor I/O.
+- Specifically: open, read, write, close are used instead of fopen, fgets, fprintf, fclose error handling uses errno and standard POSIX reporting (perror or equivalent) file formats, delimiters, and persistence semantics remain unchanged
+- This change is internal only: menu behavior does not change, reports do not change, file formats do not change, fixture data remains valid.
+- The purpose is to expose students to OS-level I/O primitives in a controlled, familiar context.
+
+-------------------------------------------------------------------------------
+Prerequisites (Readings)
+Week 11: Ch 17 (Multifile Projects)
+Week 12: Ch 18 (Outside Environment), Ch 19 (Preprocessor)
+
+-------------------------------------------------------------------------------
+What Must Stay Working (Regression Contract)
+Everything from Project 5 must still work exactly as before:
+- dynamic arrays, growth policy
+- add/list clients, add/list transactions
+- enum transaction type + client flags
+- exactly two reports (same output formats)
+- persistence load-on-start + save-on-exit
+- backward-compat or migration strategy (unchanged)
+
+-------------------------------------------------------------------------------
+Directory Layout (Exact)
+Create a new, isolated folder:
+
+project-06-casebook/
+  README.md
+  Makefile
+  src/
+    main.c
+    ui.h
+    ui.c
+    storage.h
+    storage.c
+    persistence.h
+    persistence.c
+    reports.h
+    reports.c
+    model.h
+  data/
+    fixtures/
+      clients.txt
+      transactions.txt
+    runtime/
+      (generated files live here)
+
+Notes
+- model.h is a shared “types” header (structs/enums/flags) to avoid circular includes.
+- You may rename modules if you prefer, but you must keep the same architectural ideas:
+  - UI (menu + input)
+  - Storage (in-memory data + operations)
+  - Persistence (load/save)
+  - Reports (read-only reporting)
+
+-------------------------------------------------------------------------------
+Create / Modify List
+Create:
+- project-06-casebook/README.md
+- project-06-casebook/Makefile
+- project-06-casebook/src/main.c
+- project-06-casebook/src/ui.h, ui.c
+- project-06-casebook/src/storage.h, storage.c
+- project-06-casebook/src/persistence.h, persistence.c
+- project-06-casebook/src/reports.h, reports.c
+- project-06-casebook/src/model.h
+- project-06-casebook/data/fixtures/clients.txt
+- project-06-casebook/data/fixtures/transactions.txt
+- project-06-casebook/data/runtime/ (directory)
+
+Modify:
+- None outside project-06-casebook/
+
+-------------------------------------------------------------------------------
+Build Requirements (Baseline)
+From project-06-casebook/:
+
+make
+make clean
+
+Compiler standard/flags (required)
+- Use a portable baseline:
+  - -std=c17 -Wall -Wextra -Wpedantic -g
+- Zero warnings.
+
+(We will add debug/asan targets in Week B.)
+
+-------------------------------------------------------------------------------
+Core Invariants (Contracts)
+Interface discipline
+- Headers (.h) contain:
+  - type declarations (struct/enum)
+  - function declarations
+  - constants/macros
+  - header guards
+- Headers do NOT contain:
+  - function implementations
+  - definitions of global storage
+  - executable logic
+
+Linkage discipline
+- Each .c includes its own header first.
+- Internal helpers are marked static.
+- No duplicate symbol definitions at link time.
+
+Data ownership
+Pick ONE model and document it in README:
+Option A (recommended): Ownership in storage module
+- storage.c owns the arrays and state in a single “Store” struct.
+- other modules operate via functions and receive a pointer to Store.
+Option B: Ownership in main.c
+- main.c owns the state and passes pointers around.
+(Option A tends to reduce parameter sprawl and is recommended.)
+
+Reports are read-only
+- reports.c functions must not modify storage state.
+
+-------------------------------------------------------------------------------
+Week A (Week 11) — Multifile split + clean interfaces
+Goal
+- The program is split into modules with stable interfaces.
+- Behavior remains unchanged.
+
+Tasks
+1) Create model.h (shared types)
+model.h must contain:
+- typedef struct Client Client;
+- typedef struct Transaction Transaction;
+- enum TransactionType
+- client flag constants (bit flags)
+- Any small “to string” helpers may be declared here, but implementation belongs in a .c file.
+
+2) Create storage module
+storage.h should expose (minimum):
+- a Store type (opaque or concrete)
+- init/free
+- add client / add transaction
+- find client by id
+- list accessors needed by reports/persistence (counts + pointers OR iterator-style access)
+
+3) Create persistence module
+persistence.h should expose:
+- load_all(Store *s, const char *clients_path, const char *txns_path)
+- save_all(const Store *s, const char *clients_path, const char *txns_path)
+- The module should not prompt the user; it just reads/writes.
+
+4) Create reports module
+reports.h should expose:
+- exactly the two report functions you chose in Project 5
+- each report accepts const Store* (or const arrays) and prints output
+
+5) Create UI module
+ui.h should expose:
+- menu loop function that drives user interaction
+- input helpers (if you have them)
+UI calls into storage/persistence/reports via their headers.
+
+6) main.c becomes the orchestrator
+- constructs/initializes Store
+- sets data paths (hard-coded is OK for now)
+- loads data
+- calls UI loop
+- saves on exit
+- frees everything
+
+Verification checklist
+- make builds successfully
+- program runs and produces the same outputs as Project 5
+- no warnings
+- no global variables shared across modules (unless explicitly owned and encapsulated)
+
+Minimum viable implementation (allowed shortcuts)
+- It’s acceptable to keep data paths hard-coded in main.c this week.
+- It’s acceptable if UI prints the same menu text as Project 5 (no redesign needed).
+
+-------------------------------------------------------------------------------
+Week B (Week 12) — Preprocessor discipline + “outside environment” hooks + Makefile improvements
+Goal
+- You understand why header guards work and how to control builds.
+- You add lightweight configuration without feature creep.
+
+Tasks
+1) Strengthen header guard and include hygiene
+- All headers have guards.
+- Headers include only what they need.
+- Prefer including model.h from module headers instead of repeating type definitions.
+
+2) Add DEBUG logging toggle (preprocessor)
+- Add a macro like CASEBOOK_DEBUG that enables extra prints.
+- In Makefile, add a debug target that defines it:
+  - CFLAGS += -DCASEBOOK_DEBUG
+
+3) Expand Makefile targets (required)
+Makefile must support:
+- make            (default build)
+- make clean
+- make run        (build + run the executable)
+- make debug      (adds -DCASEBOOK_DEBUG and maybe -O0)
+- make asan       (adds -fsanitize=address -fno-omit-frame-pointer)
+
+4) Outside environment (low-effort hook)
+Add ONE of these (choose one):
+Option A (recommended): CLI arg for data directory
+- ./casebook --data-dir data/runtime
+- This can be minimal parsing: accept exactly “--data-dir <path>”
+Option B: Environment variable fallback
+- CASEBOOK_DATA_DIR overrides the default
+
+Rules
+- If the option is not provided, default to your current runtime directory.
+- If parsing fails, print usage and continue with defaults (do not crash).
+
+Verification checklist
+- make debug and make asan both build.
+- DEBUG builds show additional logging only when enabled.
+- Data directory can be changed via your chosen method.
+- Behavior remains unchanged when using defaults.
+
+Minimum viable implementation (allowed shortcuts)
+- CLI parsing can be simplistic (exact flag match only).
+- It’s acceptable if only runtime paths are configurable (fixtures remain manual copy).
+
+-------------------------------------------------------------------------------
+README.md Requirements
+Your README must include:
+- Module responsibilities (ui, storage, persistence, reports, model)
+- Data ownership choice and why
+- How to build: make, make clean, make run
+- How to use debug/asan targets
+- How to reset runtime data (delete runtime files)
+- Your chosen outside-environment hook (CLI arg or env var)
+
+-------------------------------------------------------------------------------
+Common Errors to Avoid
+- Implementations in headers (causes duplicate symbols)
+- Circular includes (use model.h to break cycles)
+- Duplicating struct definitions across headers
+- Forgetting to mark helpers static
+- Makefile that recompiles everything unnecessarily (not required to be perfect, but try)
+- Using globals to “cheat” module boundaries
+
+-------------------------------------------------------------------------------
+Wireframes (Recommended)
+Use the following wireframe sets from Wireframes.txt:
+- WF-06A: Multifile Split (module responsibilities + header/API skeletons)
+- WF-06B: Makefile Targets (baseline + run/debug/asan)

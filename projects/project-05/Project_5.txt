@@ -1,0 +1,338 @@
+PROJECT 5 (Weeks 9–10)
+Casebook v4: Type Discipline + Enums + Bit Flags + Exactly Two Reports
+
+Purpose
+This milestone improves correctness and expressiveness without adding “big new systems.”
+You will:
+- tighten type usage (sizes/counts vs IDs)
+- add enums for transaction categories
+- add bit flags for client status
+- implement exactly two read-only reports over existing in-memory data
+- extend persistence to include the new fields (without breaking older files, if you choose that path)
+
+Scope control
+You are NOT building a general query engine. Reports are a small, fixed set.
+
+-------------------------------------------------------------------------------
+Prerequisites (Readings)
+Week 9: Ch 14 (Types II)
+Week 10: Ch 15–16 (Conversions), Ch 22 (enum), Ch 24 (Bitwise)
+
+-------------------------------------------------------------------------------
+What You Are Building (v4)
+Keep everything from Project 4 working:
+- dynamic arrays for clients/transactions
+- add/list clients and transactions
+- persistence load-on-start and save-on-exit
+- referential integrity (transactions reference existing clients)
+
+Add in v4:
+1) Transaction type (enum)
+2) Client status flags (bit flags)
+3) Exactly two reports (read-only)
+
+Out of scope (explicit)
+- sorting, indexing, “search everything”
+- multifile modularization + Makefile (Project 6)
+- perfect parsing of dollars/cents (we keep integer cents)
+- full test frameworks (we use fixtures + scripted manual checks)
+
+-------------------------------------------------------------------------------
+Directory Layout (Exact)
+Create a new, isolated folder:
+
+project-05-casebook/
+  README.md
+  src/
+    main.c
+  data/
+    fixtures/
+      clients.txt
+      transactions.txt
+    runtime/
+      (generated files live here)
+
+Rules
+- All C source code remains in src/main.c.
+- You may commit fixture data under data/fixtures/.
+- You should NOT commit runtime-generated data under data/runtime/ (add to .gitignore).
+
+Compatibility rule
+- File formats from Project 4 must remain readable, OR you must document a migration plan.
+- Recommended: keep runtime files in data/runtime/*.txt and fixtures in data/fixtures/*.txt.
+
+Allowed shortcut
+- If your Project 4 used data/clients.txt + data/transactions.txt (no fixtures/runtime split),
+  you may keep that. Document your exact paths and stay consistent.
+
+-------------------------------------------------------------------------------
+Create / Modify List
+Create:
+- project-05-casebook/README.md
+- project-05-casebook/src/main.c
+- project-05-casebook/data/fixtures/clients.txt
+- project-05-casebook/data/fixtures/transactions.txt
+- project-05-casebook/data/runtime/  (directory)
+
+Modify:
+- None outside project-05-casebook/
+
+-------------------------------------------------------------------------------
+Build Requirements
+From project-05-casebook/:
+
+gcc -Wall -Wextra -Wpedantic -std=c17 -g -o casebook src/main.c
+
+Optional debug build (recommended):
+gcc -Wall -Wextra -Wpedantic -std=c17 -g -fsanitize=address -fno-omit-frame-pointer -o casebook src/main.c
+
+Definition of done
+- Compiles with zero warnings.
+
+-------------------------------------------------------------------------------
+Core Invariants (Contracts)
+Program flow
+- Program loops until Quit.
+- Invalid input must not crash the program.
+- After any action (success or failure), the program returns to the menu.
+
+IDs (unchanged)
+- Client IDs start at 1 and increment ONLY on successful add.
+- Transaction IDs start at 1 and increment ONLY on successful add.
+- IDs are never reused.
+
+Referential integrity
+- A transaction’s client_id MUST match an existing client_id.
+- If client_id does not exist, reject the transaction and do NOT consume an ID.
+- On load: if a transaction references a missing client_id, skip it with a warning.
+
+Dynamic array correctness
+- count <= capacity for all dynamic arrays.
+- Never write past allocated memory.
+
+Report safety
+- Reports must NOT modify program state.
+- Reports must NOT allocate long-lived heap memory.
+- Report output must be deterministic and stable once you define its format.
+
+-------------------------------------------------------------------------------
+New Data Model (v4)
+Client gains: status flags (bit field)
+Transaction gains: type (enum)
+
+Client flags (minimum required)
+- ACTIVE
+- FLAGGED
+- ARCHIVED
+
+Rules
+- Multiple flags may be set simultaneously.
+- Document how ARCHIVED affects listings:
+  - Option A (recommended): list clients shows ALL, but highlights archived
+  - Option B: default list excludes archived and provides a separate listing/report
+Pick one and keep it consistent.
+
+Transaction types (minimum required)
+- RETAINER
+- EXPENSE
+- PAYMENT
+
+Rules
+- Stored internally as an enum value.
+- Displayed externally as a human-readable string.
+
+-------------------------------------------------------------------------------
+Week A (Week 9) — Type discipline + const-correctness pass
+Goal
+- Make your types communicate intent and reduce warnings/bugs.
+- Prepare clean interfaces for Week B’s enum/flags/report work.
+
+Tasks
+1) Type audit (required)
+- Counts/capacities and indices: use size_t
+  - client_count, client_capacity, txn_count, txn_capacity
+  - loop indices over counts
+- Amounts:
+  - Keep amount_cents as int for now (simple), but treat it consistently as “cents”
+- IDs:
+  - Keep client_id / txn_id as int
+
+2) Const-correctness (required, lightweight)
+- In list and report-style functions, accept const pointers where possible:
+  - const Client *clients
+  - const Transaction *txns
+- If you pass a pointer for read-only use, mark it const.
+
+3) “Parsing discipline” prep (recommended)
+- For menu choices, ensure your input approach is stable (line + convert is best).
+- You do NOT need perfect numeric parsing yet, but don’t crash on bad input.
+
+Verification checklist
+- Code compiles with zero warnings after type changes.
+- Basic add/list + persistence behavior remains unchanged from Project 4.
+
+Minimum viable implementation (allowed shortcuts)
+- It’s okay if numeric parsing is still basic (reject on failure, return to menu).
+- It’s okay if you haven’t added any new UI options yet.
+
+-------------------------------------------------------------------------------
+Week B (Week 10) — Enums + bit flags + exactly two reports + persistence extension
+Goal
+- Introduce enum + bit flags cleanly.
+- Implement exactly two deterministic read-only reports.
+- Persist the new fields.
+
+Part 1: Transaction type (enum)
+Tasks
+1) Define enum TransactionType with at least:
+- TXN_RETAINER
+- TXN_EXPENSE
+- TXN_PAYMENT
+
+2) Store type in every Transaction.
+3) Update “Add transaction” UI
+- Present numbered options for type selection.
+- Reject invalid selection (do not consume txn_id).
+4) Display type in listings and reports
+- Provide a helper:
+  - const char *transaction_type_to_string(TransactionType t);
+
+Minimum viable behavior
+- Accept “type selection” as 1/2/3.
+- Do NOT accept free-form text types.
+
+Part 2: Client status flags (bit flags)
+Tasks
+1) Define flag constants using bit positions.
+Example pattern (conceptual):
+- CLIENT_ACTIVE   = 1 << 0
+- CLIENT_FLAGGED  = 1 << 1
+- CLIENT_ARCHIVED = 1 << 2
+
+2) Add a flags field to Client (e.g., unsigned int flags;).
+3) Provide helpers (recommended):
+- int client_has_flag(const Client *c, unsigned int flag);
+- void client_set_flag(Client *c, unsigned int flag);
+- void client_clear_flag(Client *c, unsigned int flag);
+
+4) Add at least one menu action that modifies flags.
+Low-effort recommended option:
+- “Toggle FLAGGED for a client”
+  - prompt for client_id
+  - if exists: toggle
+  - save will persist it
+
+Minimum viable behavior
+- You may limit flag editing to only one flag (FLAGGED) in v4, as long as all three flags exist.
+
+Part 3: Reports (exactly two)
+You must implement EXACTLY TWO reports, chosen from this list:
+
+Report A: Client ledger summary
+- Prompt for client_id
+- Totals by type (retainer/expense/payment) + net
+
+Report B: Totals by transaction type (global)
+- Total cents per type across all transactions
+
+Report C: Transactions for a client
+- Prompt for client_id
+- Print that client’s transactions in append order
+
+Report D: Flagged clients list
+- Print clients with FLAGGED set (respect your archived policy)
+
+Constraints (required)
+- Reports are read-only.
+- Reports are separate functions.
+- Output is deterministic.
+- Reports do not allocate long-lived heap memory.
+
+Recommended pairings (pick one)
+- A + D (good mix of enum + flags)
+- B + D (fastest to implement)
+- A + C (most “useful,” slightly more work)
+
+Part 4: Persistence extension (required)
+You must persist:
+- Client flags
+- Transaction type
+
+File extension rule (required)
+- Extend lines by adding new fields AT THE END.
+- Existing fields remain in the same order.
+
+Suggested formats (illustrative)
+Clients:
+id|name|contact|flags
+
+Transactions:
+id|client_id|amount_cents|type|memo
+
+Backward compatibility strategy (choose ONE and document)
+Option 1 (recommended): Backward-compatible defaults
+- If flags missing: default to ACTIVE
+- If type missing: default to PAYMENT (or your documented default)
+- Loader accepts both “old” and “new” line shapes
+
+Option 2: Require new files
+- Loader expects new shapes only
+- README includes migration steps (“delete old runtime files and regenerate”)
+
+Delimiter rule (same as Project 3/4)
+- Because we do not implement escaping, delimiter must not appear in string fields.
+- If it appears in user input, reject or replace it (document your choice).
+
+Verification checklist
+- Add transaction with each type; list shows human-readable types.
+- Toggle a client’s FLAGGED status; list/report reflects it.
+- Exactly two reports exist and work deterministically.
+- Save → restart → load preserves flags and types.
+- Loading old-format files follows your chosen strategy (defaults or migration).
+
+Minimum viable implementation (allowed shortcuts)
+- Reports may print cents as integers (no dollars formatting).
+- If numeric parsing fails, reject and return to menu.
+- If a file line is malformed, warn and skip it.
+
+-------------------------------------------------------------------------------
+Acceptance Tests (Scripted Manual)
+Use fixture data (recommended)
+1) Copy known-good files into your runtime location.
+2) Run:
+- List clients
+- List transactions
+- Run both reports
+3) Add one new client and one new transaction; quit.
+4) Restart; verify the new items persist.
+
+Edge behavior (quick checks)
+- Attempt to add a transaction for a non-existent client → reject, no ID consumed.
+- Toggle FLAGGED for a non-existent client → clear error, no crash.
+- Reports do not change counts or IDs.
+
+-------------------------------------------------------------------------------
+README.md Requirements
+Your README must include:
+- Supported transaction types and how to select them
+- Supported client flags and meaning
+- Which TWO reports you implemented and how to run them
+- File format changes + backward-compat strategy
+- Reset instructions (how to wipe runtime data)
+
+-------------------------------------------------------------------------------
+Common Errors to Avoid
+- Treating enums as strings internally
+- Using logical operators (&&, ||) instead of bitwise operators (&, |, ^, ~)
+- Forgetting to persist new fields
+- Consuming IDs on failed operations
+- Allowing reports to mutate state or reorder records silently
+
+-------------------------------------------------------------------------------
+Wireframes
+No wireframes are required for Project 5.
+
+If you want scaffolding, WF-00 from Wireframes.txt can help you outline:
+- enum and flag helper functions
+- report function signatures
+…but keep this deliverable single-file for simplicity.

@@ -1,0 +1,197 @@
+INTRO TO C — COURSE OVERVIEW (Beej + Casebook)
+Version: v1
+
+What this course is
+You are completing a self-imposed “college-style” Intro to C course by:
+- reading all chapters in Beej’s Guide to C (see Readings.txt)
+- building one iterative program (Casebook) through 7 deliverables
+- keeping work organized, reviewable, and repeatable
+
+Important constraint (how we save time)
+- Reading is required.
+- Code requirements are intentionally “minimum viable” unless explicitly stated.
+- You are allowed to use wireframes (see Wireframes.txt) to reduce startup time.
+
+----------------------------------------------------------------
+Course Outcomes (what you should be able to do at the end)
+
+By the end of Project 7 you will be able to:
+- write and refactor C programs safely with warnings enabled
+- manage memory with malloc/realloc/free using clear ownership rules
+- model data with structs/enums/bit flags
+- persist data to and from files using a documented format
+- organize a C project into multiple compilation units with headers and a Makefile
+- harden program behavior against common input and file failures
+- demonstrate your program reliably using repeatable demo scripts
+
+----------------------------------------------------------------
+Repo Structure (how everything fits together)
+
+At repo root (course specifications):
+- Readings.txt
+- Project_1.txt … Project_7.txt
+- Wireframes.txt
+- Git_and_GitHub_Intro.txt
+- COURSE_OVERVIEW.txt (this file)
+- DEMO_SCRIPTS.txt (repeatable demo procedures + templates)
+
+In projects/ (code you compile and run):
+projects/
+  project-01-casebook/
+  project-02-casebook/
+  ...
+  project-07-casebook/
+
+Working directory rule (use this to avoid confusion)
+- When editing specs: work in repo root.
+- When compiling/running code: cd into the specific project folder.
+  Example:
+    cd projects/project-04-casebook
+    gcc ...   (or make, in later projects)
+
+----------------------------------------------------------------
+Weekly Rhythm (simple, repeatable)
+
+Each project has two deliverable parts: Week A and Week B.
+
+Your “finish line” each week:
+1) Do the reading for that week (depth guidance is in Readings.txt).
+2) Implement the minimum viable tasks in the Project spec.
+3) Run the Demo Script for that week’s part (see DEMO_SCRIPTS.txt).
+4) Commit your work (Git) with a clear message.
+
+----------------------------------------------------------------
+Minimum Viable vs Strong (rubric you can actually use)
+
+For each week part (A or B), treat the spec as:
+PASS (minimum)
+- Builds successfully with zero warnings (or Makefile target builds cleanly)
+- Core invariants for that project are preserved (IDs, integrity rules, etc.)
+- The week’s required features work in the normal path
+- Demo Script passes
+
+STRONG (optional, time permitting)
+- Cleaner error messages and fewer “weird states”
+- More consistent input handling
+- Slightly clearer internal structure (helpers, reduced duplication)
+- A few extra edge cases handled (only if explicitly called out as valuable)
+
+Stop rule (to keep this course lightweight)
+If you hit PASS and the Demo Script passes, you may stop and move on.
+
+----------------------------------------------------------------
+Wireframes (how they are used in this course)
+
+What wireframes are
+- file/module skeletons + function signatures + responsibility notes + TODOs
+- a way to start from structure instead of a blank file
+
+What wireframes are not
+- full implementations
+- “the answer” to the assignment
+
+When to use them
+- especially useful starting in Project 6 (multifile + Makefile)
+- optionally useful earlier if you want help planning helpers
+
+How to use them
+1) Read the Project week part first.
+2) If you want scaffolding, copy the wireframe set into your project folder.
+3) Implement the TODOs yourself.
+4) Preserve the listed invariants.
+
+----------------------------------------------------------------
+Demo Scripts (what they are and how to use them)
+
+Demo Scripts are repeatable procedures that prove your program works.
+They are NOT a full test framework.
+
+Why they matter
+- They catch regressions early (especially once persistence exists).
+- They give you a “college course” discipline: you can demonstrate your work reliably.
+- They reduce debugging time by providing a known, repeatable run.
+
+Where to find them
+- DEMO_SCRIPTS.txt contains:
+  - instructions for constructing demo inputs
+  - per-project demo templates (Week A/Week B)
+
+How they are constructed
+Each demo has these parts:
+1) Setup (optional)
+   - reset runtime data (delete runtime files)
+   - copy fixtures into runtime (when fixtures exist)
+2) Build step
+   - gcc command (early projects) or make target (later projects)
+3) Run step
+   - interactive steps (what to type)
+   - OR scripted input steps (a plain text file fed to stdin)
+4) Verification
+   - a small list of “must-see” output lines
+   - sanity checks (IDs not consumed on failure, etc.)
+5) Persistence check (Projects 3+)
+   - quit to trigger save
+   - restart to verify load
+
+How you should use them
+- Before you consider a week “done,” run that week’s demo.
+- If the demo fails, fix the bug and rerun the demo.
+- After it passes, commit.
+
+Optional automation style (still lightweight)
+If your UI is line-based, you can store demo input as a file and run:
+- ./casebook < tests/demo_input.txt > tests/actual_output.txt
+Then compare actual_output.txt to expectations (manual compare is fine).
+
+Important
+- Demos should be short: aim for 1–3 minutes.
+- Demos check behavior; they do not prove perfection.
+
+----------------------------------------------------------------
+Course Milestones (what changes each project)
+
+Project 1: Program shape
+- menu loop, stable flow, basic input discipline
+
+Project 2: Functions + arrays/strings
+- fixed-capacity storage with parallel arrays
+- enforce ID and referential integrity invariants
+
+Project 3: Structs + persistence
+- migrate to arrays of structs
+- load/save with a documented text format
+
+Project 4: Dynamic memory
+- replace fixed capacities with malloc/realloc growth
+- enforce count/capacity invariants and clean shutdown
+
+Project 5: Types + enum + bit flags + reports
+- type discipline (size_t vs int)
+- enums (transaction types) and flags (client status)
+- exactly two reports + persistence extension
+
+Project 6: Multifile + Makefile + configuration hook
+- split into modules with clean headers
+- Makefile targets (run/debug/asan)
+- small outside-environment hook (CLI arg or env var)
+
+Project 7: Consolidation and stability
+- two more reports (4 total)
+- deterministic report output discipline
+- stability pass (input, bounds, memory, file robustness)
+- final demo workflow documented
+
+----------------------------------------------------------------
+What to do if you fall behind
+- Keep reading chapters in order as much as possible.
+- For code: prioritize PASS + Demo Script, then move on.
+- You can always return for “Strong” improvements later.
+
+----------------------------------------------------------------
+
+If you can:
+- rebuild any project folder cleanly
+- run the demo scripts reliably
+- explain why each project milestone exists
+
+…you successfully completed the course.

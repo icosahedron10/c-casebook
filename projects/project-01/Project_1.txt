@@ -1,0 +1,202 @@
+PROJECT 1 (Weeks 1–2)
+Casebook v0: Skeleton (Menu + Program Shape)
+
+Purpose
+This is the first milestone in an iterative Casebook project. The goal is to establish a clean, predictable program “shape” that all later iterations can safely build on.
+
+Credit-hour note
+This is a low-production course. Your focus here is:
+- building and running reliably
+- program flow that never gets “stuck”
+- clear separation of responsibilities (lightweight)
+
+You are NOT expected to build robust storage, perfect validation, or persistence in this deliverable.
+
+-------------------------------------------------------------------------------
+Shared Repo Rules (applies to every project)
+Repository structure
+- One Git repository contains all projects.
+- Each project lives in its own folder under a shared parent folder.
+
+Recommended repo layout:
+repo-root/
+  Readings.txt
+  Wireframes.txt
+  projects/
+    project-01-casebook/
+    project-02-casebook/
+    ...
+    project-07-casebook/
+
+Isolation rule
+- Build and run commands are executed from the project folder you are currently working in.
+- Do not rely on code/files from other project folders when building/running this project.
+
+Git rule
+- Do not commit build artifacts (executables, .o, etc.). Use a repo-level .gitignore.
+
+-------------------------------------------------------------------------------
+Prerequisites (Readings)
+Week 1: Ch 1–2
+Week 2: Ch 3
+
+If you haven’t read these yet, you can still do Week 1 tasks, but Week 2 will feel confusing.
+
+-------------------------------------------------------------------------------
+What You Are Building (v0)
+A terminal program that repeatedly displays a menu:
+
+1. Add client
+2. List clients
+3. Quit
+
+At v0, “clients” are conceptual:
+- You MAY collect a name/contact and echo it back.
+- You DO NOT need to store a database of multiple clients yet.
+- You DO assign and display a next ID (starting at 1) so later versions can keep continuity.
+
+Out of scope for Project 1
+- structs
+- dynamic memory (malloc/realloc)
+- file persistence
+- transactions
+- multifile layouts / Makefiles (introduced later)
+
+-------------------------------------------------------------------------------
+Directory Layout (Exact)
+You must create the following directory structure:
+
+project-01-casebook/
+  README.md
+  src/
+    main.c
+
+Rules
+- No additional files or directories inside project-01-casebook/.
+- (Repo-level files like Readings.txt/Wireframes.txt live above projects/.)
+
+-------------------------------------------------------------------------------
+Create / Modify List
+Create:
+- project-01-casebook/README.md
+- project-01-casebook/src/main.c
+
+Modify:
+- None (this is the first project)
+
+-------------------------------------------------------------------------------
+Build Requirements
+From the project-01-casebook/ directory, this command must succeed:
+
+gcc -Wall -Wextra -Wpedantic -std=c11 -g -o casebook src/main.c
+
+Definition of done for build
+- Compiles with zero warnings.
+
+Notes
+- You may add -Werror if you want extra strictness, but it is optional.
+
+-------------------------------------------------------------------------------
+Run Requirements
+./casebook
+
+The program must start, display the menu, and respond to user input.
+
+-------------------------------------------------------------------------------
+Invariants (Rules that must remain true)
+These invariants will be assumed by later projects—treat them as “contracts”.
+
+Program flow
+- The program loops until the user chooses Quit.
+- Invalid input must never crash the program.
+- After any action (success or failure), the program returns to the menu.
+
+ID behavior (v0 contract)
+- The next client ID starts at 1.
+- Each successful “Add client” increments the next ID by 1.
+  - (Even though we’re not storing records yet, this establishes predictable behavior.)
+
+Output behavior
+- Menu display is consistent and easy to read.
+- Error messages are short, clear, and do not spam.
+
+-------------------------------------------------------------------------------
+Week A (Week 1) — Program shape + toolchain
+Goal
+- You can build and run a stable menu loop.
+- Each option routes to a distinct “action” block (even if it does little).
+
+Tasks
+1) Write main() with a loop:
+   - print menu
+   - read a choice
+   - handle choice
+2) Implement “Quit” cleanly.
+3) Implement “Add client” and “List clients” as stubs:
+   - Print “TODO: not implemented yet” or similar.
+4) Basic input safety:
+   - Read input in a way that won’t crash on unexpected characters.
+
+Verification checklist
+- Program never exits unexpectedly on bad input (letters, blank line, very large numbers).
+- Selecting 3 quits immediately and cleanly.
+
+Minimum viable implementation (acceptable shortcuts)
+- It’s acceptable if your menu choice reading is simplistic this week.
+- It’s acceptable if Add/List do not do real work yet.
+
+-------------------------------------------------------------------------------
+Week B (Week 2) — Basic input + add/list behavior (still minimal storage)
+Goal
+- Add Client does something concrete and predictable.
+- List Clients provides meaningful output (even if storage is minimal).
+
+Tasks
+1) Implement line-based menu choice input:
+   - Read a full line (e.g., fgets)
+   - Convert to integer
+   - Reject invalid choices
+2) Implement Add Client (v0 level):
+   - Prompt for name
+   - Prompt for contact
+   - Print: “Added client #<id>: <name> | <contact>”
+   - Increment next ID
+3) Implement List Clients (v0 level):
+   Choose ONE of the following approaches:
+   A) Minimal storage (recommended)
+      - Store ONLY the most recently added client (name/contact) and its ID.
+      - List prints either “No clients yet” or prints the single stored client.
+   B) No storage (allowed)
+      - List prints: “No storage in v0. Storage begins in Project 2.”
+      - This is acceptable if Add Client still prints a confirmation and increments ID.
+
+Verification checklist
+- Add client works repeatedly without input getting “skipped”.
+- List clients behaves deterministically.
+- No buffer overflows: you always read into fixed-size buffers.
+
+Minimum viable implementation (acceptable shortcuts)
+- You may assume name/contact lines are below your max buffer size.
+- You may reject overly long input by truncation (document it in README).
+
+-------------------------------------------------------------------------------
+README.md Requirements
+Your README must include:
+- What the program is (1–3 sentences)
+- How to build (copy/paste command)
+- How to run
+- What “v0” supports (and what is explicitly out of scope)
+- Known limitations (be honest; this is normal)
+
+-------------------------------------------------------------------------------
+Common Errors to Avoid
+- “Input skipping” because a newline was left in the input buffer
+- Infinite loops due to not changing state on invalid input
+- Not checking return values from fgets/printf in critical spots
+- Off-by-one mistakes on the next ID
+
+-------------------------------------------------------------------------------
+Wireframes
+None required for Project 1.
+
+(We will start using wireframes once the project becomes multi-module or needs larger scaffolding.)

@@ -1,0 +1,234 @@
+PROJECT 2 (Weeks 3–4)
+Casebook v1: Modular Records with Parallel Arrays (No Structs Yet)
+
+Purpose
+This milestone turns your Project 1 “program shape” into a small, working data program:
+- You will split behavior into functions (so main() stays small)
+- You will store multiple clients and multiple transactions using fixed-capacity arrays
+- You will enforce a few core invariants (IDs, valid references)
+
+Design constraint (intentional)
+We are NOT using structs yet. This is deliberate so you practice:
+- arrays
+- parallel arrays
+- string buffers
+- keeping indices aligned
+
+-------------------------------------------------------------------------------
+Prerequisites (Readings)
+Week 3: Ch 4 (Functions), Ch 5 (Pointers, basic)
+Week 4: Ch 6 (Arrays), Ch 7 (Strings)
+
+-------------------------------------------------------------------------------
+What You Are Building (v1)
+A terminal program that repeatedly displays a menu with at least:
+
+1. Add client
+2. List clients
+3. Add transaction
+4. List transactions
+5. Quit
+
+Definitions
+Client (v1)
+- Has: client_id (int), name (string), contact (string)
+
+Transaction (v1)
+- Has: txn_id (int), client_id (int), amount (integer cents), memo (string)
+
+Important: Transaction must reference an existing client_id.
+
+Out of scope for Project 2 (explicit)
+- structs (Project 3)
+- file persistence (Project 3)
+- dynamic memory (Project 4)
+- multifile projects + Makefile (Project 6)
+- “perfect” input validation (we will gradually tighten this later)
+
+-------------------------------------------------------------------------------
+Directory Layout (Exact)
+Create a new, isolated folder for this deliverable:
+
+project-02-casebook/
+  README.md
+  src/
+    main.c
+
+Starting point
+- Copy your Project 1 code into this folder and evolve it.
+- Do NOT build Project 2 by linking/including Project 1’s folder.
+
+-------------------------------------------------------------------------------
+Create / Modify List
+Create:
+- project-02-casebook/README.md
+- project-02-casebook/src/main.c
+
+Modify:
+- None outside project-02-casebook/
+
+-------------------------------------------------------------------------------
+Build Requirements
+From project-02-casebook/:
+
+gcc -Wall -Wextra -Wpedantic -std=c17 -g -o casebook src/main.c
+
+Definition of done for build
+- Compiles with zero warnings.
+
+-------------------------------------------------------------------------------
+Core Invariants (Contracts)
+These invariants will be assumed by later projects. Treat them as non-negotiable.
+
+Program flow
+- Program loops until Quit.
+- Invalid input must not crash the program.
+- After any action (success or failure), the program returns to the menu.
+
+IDs
+- Client IDs:
+  - Start at 1
+  - Increment by 1 ONLY when a client is successfully added
+  - Never reused (even if later we add deletion)
+- Transaction IDs:
+  - Start at 1
+  - Increment by 1 ONLY when a transaction is successfully added
+  - Never reused
+
+Referential integrity (v1)
+- A transaction’s client_id MUST match an existing client_id.
+- If the client_id does not exist, reject the transaction and do NOT increment txn_id.
+
+Parallel array integrity
+- For each record type, all parallel arrays are kept aligned by index.
+  Example: client_name[i] belongs to client_id[i] and client_contact[i].
+- “Count” variables always track how many valid items exist.
+
+-------------------------------------------------------------------------------
+Fixed-Capacity Storage Rules (v1)
+You must define fixed max sizes as constants (choose reasonable values).
+
+Required idea
+- Clients are stored in parallel arrays:
+  - client_ids[]
+  - client_names[][]
+  - client_contacts[][]
+  - client_count
+- Transactions are stored in parallel arrays:
+  - txn_ids[]
+  - txn_client_ids[]
+  - txn_amount_cents[]
+  - txn_memos[][]
+  - txn_count
+
+String policy
+- All strings are stored in fixed-size buffers.
+- You may assume inputs fit within your max length (for now), BUT:
+  - you must not overflow buffers
+  - you must handle truncation deterministically (document it)
+
+-------------------------------------------------------------------------------
+Week A (Week 3) — Functions + client storage
+Goal
+- main() is small and readable.
+- Clients can be added and listed reliably using fixed arrays.
+
+Tasks
+1) Refactor into functions
+   Required functions (names are up to you, but responsibilities are not):
+   - print_menu()
+   - read_menu_choice(...)  (or equivalent)
+   - action_add_client(...)
+   - action_list_clients(...)
+   - action_add_transaction(...)  (stub for Week A is OK)
+   - action_list_transactions(...) (stub for Week A is OK)
+
+2) Implement client storage (fixed-capacity)
+   - Add client prompts for name + contact
+   - Assign next client_id
+   - Store into parallel arrays
+   - Increment client_count and next_client_id only on success
+
+3) Implement list clients
+   - If no clients: print “No clients yet.”
+   - Otherwise: print each client in a consistent format, one per line
+
+Verification checklist
+- You can add 2–3 clients and list them correctly.
+- Bad menu input does not crash or break the loop.
+- main() is not doing all the work (menu routing only).
+
+Minimum viable implementation (allowed shortcuts)
+- You may keep transaction options as stubs this week.
+- You may use simple parsing for menu choice (as long as it doesn’t crash).
+- You may hard-limit client name/contact lengths and truncate input.
+
+-------------------------------------------------------------------------------
+Week B (Week 4) — Arrays/strings + transactions
+Goal
+- Transactions can be added and listed reliably.
+- Transactions require valid client_id references.
+
+Tasks
+1) Implement “Add transaction”
+   Prompts:
+   - client_id (int)
+   - amount (integer cents preferred; ex: 1299 means $12.99)
+   - memo (string)
+
+   Rules:
+   - Reject if there are no clients.
+   - Reject if client_id does not exist.
+   - Reject if transaction storage is full.
+   - Only on success:
+     - store all txn fields into aligned arrays
+     - increment txn_count
+     - increment next_txn_id
+
+2) Implement “List transactions”
+   - If no transactions: print “No transactions yet.”
+   - Otherwise: print each transaction in a consistent format.
+   Recommended fields per line:
+   - txn_id, client_id, amount_cents, memo
+
+3) Add a helper to check if a client exists
+   Example responsibility (not code):
+   - int find_client_index_by_id(int client_id) → returns index or -1
+
+4) Tighten string handling discipline
+   - Use line-based input for strings (fgets or equivalent)
+   - Remove trailing newline if present
+   - Never write past buffer bounds
+
+Verification checklist
+- Add a transaction for an existing client succeeds.
+- Add a transaction for a non-existent client fails cleanly AND does not consume an ID.
+- Listing shows the stored transactions deterministically.
+
+Minimum viable implementation (allowed shortcuts)
+- Amount parsing can be simplistic (integer cents). You do NOT need to accept “$12.99”.
+- If numeric parsing fails, you may reject the input and return to menu.
+- You do not need sorting, totals, or reports yet.
+
+-------------------------------------------------------------------------------
+README.md Requirements
+Your README must include:
+- What v1 supports (clients + transactions; fixed capacity; no structs yet)
+- Build + run commands
+- Limits (MAX_CLIENTS, MAX_TXNS, max string lengths)
+- Known limitations (parsing, truncation behavior, etc.)
+
+-------------------------------------------------------------------------------
+Common Errors to Avoid
+- Mixing up parallel array indices (storing name at i but id at i+1)
+- Incrementing IDs even when an add fails
+- Accepting a transaction for a client_id that doesn’t exist
+- “Input skipping” from leftover newlines
+- Letting main() grow into a 300-line function
+
+-------------------------------------------------------------------------------
+Wireframes
+No wireframes are required for Project 2.
+
+If you want extra scaffolding, you may use WF-00 (template) from Wireframes.txt to outline a module,
+but keep this project single-file unless you strongly prefer otherwise.

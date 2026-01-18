@@ -1,0 +1,261 @@
+PROJECT 3 (Weeks 5–6)
+Casebook v2: Struct Records + Basic Persistence (Text Files)
+
+Purpose
+This milestone performs the first “real refactor” of Casebook:
+- Replace parallel arrays with arrays of structs (cleaner data modeling)
+- Add basic persistence so data survives across runs
+
+Constraint (intentional)
+To keep this low-effort, we keep the code single-file (src/main.c). Multifile modularization comes later (Project 6).
+
+-------------------------------------------------------------------------------
+Prerequisites (Readings)
+Week 5: Ch 8 (Structs)
+Week 6: Ch 9 (File I/O)
+
+-------------------------------------------------------------------------------
+What You Are Building (v2)
+From the user’s perspective, the program should behave like Project 2:
+- Add/list clients
+- Add/list transactions
+- Enforce valid references (transactions must reference existing clients)
+
+New behavior in v2:
+- On startup: load clients + transactions from disk (if present)
+- On normal exit: save current in-memory data back to disk (overwrite)
+
+Out of scope (explicit)
+- dynamic memory (Project 4)
+- “perfect” parsing of every malformed file line (skip with warning is fine)
+- multifile layout / Makefile (Project 6)
+- escaped delimiters in file formats
+
+-------------------------------------------------------------------------------
+Directory Layout (Exact)
+Create a new, isolated folder:
+
+project-03-casebook/
+  README.md
+  src/
+    main.c
+  data/
+    fixtures/
+      clients.txt
+      transactions.txt
+    runtime/
+      (generated files live here)
+
+Rules
+- All C source code remains in src/main.c.
+- You may commit fixture data under data/fixtures/.
+- You should NOT commit runtime-generated data under data/runtime/ (add to .gitignore).
+
+If you prefer less structure (allowed shortcut)
+- You may omit data/fixtures/ and place sample files directly in data/.
+- If you choose this, document it clearly in README and be consistent.
+
+-------------------------------------------------------------------------------
+Create / Modify List
+Create:
+- project-03-casebook/README.md
+- project-03-casebook/src/main.c
+- project-03-casebook/data/fixtures/clients.txt
+- project-03-casebook/data/fixtures/transactions.txt
+- project-03-casebook/data/runtime/  (directory)
+
+Modify:
+- None outside project-03-casebook/
+
+-------------------------------------------------------------------------------
+Build Requirements
+From project-03-casebook/:
+
+gcc -Wall -Wextra -Wpedantic -std=c17 -g -o casebook src/main.c
+
+Definition of done for build
+- Compiles with zero warnings.
+
+-------------------------------------------------------------------------------
+Core Invariants (Contracts)
+Program flow
+- Program loops until Quit.
+- Invalid input must not crash the program.
+- After any action (success or failure), the program returns to the menu.
+
+IDs (same contract as Project 2)
+- Client IDs:
+  - Start at 1 if no saved data exists
+  - Increment by 1 ONLY when a client is successfully added
+  - Never reused
+- Transaction IDs:
+  - Start at 1 if no saved data exists
+  - Increment by 1 ONLY when a transaction is successfully added
+  - Never reused
+
+Persistence + IDs (new v2 contract)
+- When loading from disk:
+  - IDs must be loaded as stored (do not regenerate)
+  - “next ID” must be set to (max loaded ID + 1) for each record type
+- A rejected add (client or transaction) must not consume an ID.
+
+Referential integrity
+- A transaction’s client_id MUST match an existing client_id.
+- If the client_id does not exist, reject the transaction.
+
+Output stability
+- Listing order is stable and predictable:
+  - Clients list in the order stored in memory (append order)
+  - Transactions list in append order
+- (No sorting required yet.)
+
+-------------------------------------------------------------------------------
+Week A (Week 5) — Struct migration (no persistence yet)
+Goal
+- All parallel arrays from Project 2 are replaced by arrays of structs.
+- Program behavior (menu + add/list) remains intact.
+
+Tasks
+1) Define your record types
+Required minimum:
+- struct Client:
+  - int id;
+  - char name[...];
+  - char contact[...];
+
+- struct Transaction:
+  - int id;
+  - int client_id;
+  - int amount_cents;
+  - char memo[...];
+
+2) Replace storage representation
+Before (Project 2 concept):
+- client_ids[], client_names[][], client_contacts[][]
+
+After (Project 3):
+- Client clients[MAX_CLIENTS];
+- int client_count;
+
+Similarly for transactions:
+- Transaction transactions[MAX_TRANSACTIONS];
+- int transaction_count;
+
+3) Refactor actions to use struct arrays
+- Add client stores into clients[client_count]
+- List clients prints fields from the struct
+- Add/list transactions updated similarly
+
+Verification checklist
+- Add 2 clients, list them correctly.
+- Add 2 transactions for valid clients, list them correctly.
+- A transaction for a non-existent client is rejected and does not consume an ID.
+- Nothing about persistence exists yet (that’s Week B).
+
+Minimum viable implementation (allowed shortcuts)
+- Keep input assumptions from Project 2 (bounded strings, integer cents).
+- It’s okay if you haven’t improved parsing yet beyond “doesn’t crash”.
+
+-------------------------------------------------------------------------------
+Week B (Week 6) — File persistence (load on start, save on exit)
+Goal
+- Data survives across runs using a stable, documented text format.
+
+Persistence files (required)
+Choose one runtime location:
+
+Option A (recommended, matches the directory layout)
+- data/runtime/clients.txt
+- data/runtime/transactions.txt
+
+Option B (simpler, fewer folders)
+- data/clients.txt
+- data/transactions.txt
+
+Pick ONE option and document it in README.
+
+File format rules (v2)
+- Plain text
+- One record per line
+- Fields separated by a single delimiter character (recommend '|')
+- No escaping rules required
+
+Delimiter rule (important)
+- Because we do not implement escaping, your chosen delimiter must NOT appear in string fields.
+  - If it appears in user input, either reject the input or replace it (document your choice).
+
+Suggested formats (illustrative)
+Clients:
+client_id|name|contact
+
+Transactions:
+txn_id|client_id|amount_cents|memo
+
+Tasks
+1) Implement save-on-exit
+- On normal quit, overwrite the clients file and transactions file.
+- Do NOT append.
+- If a file can’t be opened for writing, print a clear error and still exit cleanly.
+
+2) Implement load-on-start
+- At program start:
+  - reset client_count and transaction_count to 0
+  - attempt to open files
+  - if missing: treat as empty dataset (not an error)
+  - parse each line into the next array slot
+- If a line is malformed:
+  - print a short warning (include which file)
+  - skip the line
+  - continue loading
+
+3) Recompute next IDs after load
+- next_client_id = max_client_id_loaded + 1 (or 1 if none loaded)
+- next_txn_id = max_txn_id_loaded + 1 (or 1 if none loaded)
+
+4) Maintain referential integrity on load (time saver rule)
+Pick ONE of these strategies (both acceptable):
+A) Strict load (recommended)
+- Load clients first, then transactions.
+- If a loaded transaction references a non-existent client_id, skip it with a warning.
+B) Lenient load
+- Load transactions regardless, but block listing/adding until the dataset is consistent.
+(Strategy A is simpler and recommended.)
+
+Verification checklist
+- Run program, add data, quit.
+- Run program again: data is loaded and lists match what you saved.
+- Delete the runtime files: program starts “empty” again.
+- A malformed line does not crash the program.
+
+Minimum viable implementation (allowed shortcuts)
+- You may assume numeric fields fit in int.
+- You may parse with sscanf initially if it behaves reliably for your format.
+  - But you MUST avoid buffer overflow and must handle missing fields.
+- It’s acceptable to skip malformed lines rather than recover.
+
+-------------------------------------------------------------------------------
+README.md Requirements
+Your README must include:
+- What v2 adds (structs + persistence)
+- Where files are stored (exact paths)
+- The file formats (show a sample line for each file)
+- Reset instructions (how to wipe runtime data)
+- Limitations (delimiter rule, malformed-line policy, etc.)
+
+-------------------------------------------------------------------------------
+Common Errors to Avoid
+- Forgetting to reset counts before loading
+- Appending instead of overwriting on save
+- Failing to recompute next IDs after load
+- Buffer overflow while parsing lines
+- Inconsistent delimiter use between save and load
+- Loading transactions before clients (if using strict load)
+
+-------------------------------------------------------------------------------
+Wireframes
+No wireframes are required for Project 3.
+
+If you want structure help, you may use WF-00 from Wireframes.txt to outline:
+- persistence functions (save/load)
+- a small “find client by id” helper
+…but keep this deliverable single-file for simplicity.
