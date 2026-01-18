@@ -37,7 +37,7 @@ Everything from Project 5 must still work exactly as before:
 Directory Layout (Exact)
 Create a new, isolated folder:
 
-project-06-casebook/
+project-06/
   README.md
   Makefile
   src/
@@ -69,24 +69,24 @@ Notes
 -------------------------------------------------------------------------------
 Create / Modify List
 Create:
-- project-06-casebook/README.md
-- project-06-casebook/Makefile
-- project-06-casebook/src/main.c
-- project-06-casebook/src/ui.h, ui.c
-- project-06-casebook/src/storage.h, storage.c
-- project-06-casebook/src/persistence.h, persistence.c
-- project-06-casebook/src/reports.h, reports.c
-- project-06-casebook/src/model.h
-- project-06-casebook/data/fixtures/clients.txt
-- project-06-casebook/data/fixtures/transactions.txt
-- project-06-casebook/data/runtime/ (directory)
+- project-06/README.md
+- project-06/Makefile
+- project-06/src/main.c
+- project-06/src/ui.h, ui.c
+- project-06/src/storage.h, storage.c
+- project-06/src/persistence.h, persistence.c
+- project-06/src/reports.h, reports.c
+- project-06/src/model.h
+- project-06/data/fixtures/clients.txt
+- project-06/data/fixtures/transactions.txt
+- project-06/data/runtime/ (directory)
 
 Modify:
-- None outside project-06-casebook/
+- None outside project-06/
 
 -------------------------------------------------------------------------------
 Build Requirements (Baseline)
-From project-06-casebook/:
+From project-06/:
 
 make
 make clean

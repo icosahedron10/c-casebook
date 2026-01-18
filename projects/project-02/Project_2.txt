@@ -49,7 +49,7 @@ Out of scope for Project 2 (explicit)
 Directory Layout (Exact)
 Create a new, isolated folder for this deliverable:
 
-project-02-casebook/
+project-02/
   README.md
   src/
     main.c
@@ -61,15 +61,15 @@ Starting point
 -------------------------------------------------------------------------------
 Create / Modify List
 Create:
-- project-02-casebook/README.md
-- project-02-casebook/src/main.c
+- project-02/README.md
+- project-02/src/main.c
 
 Modify:
-- None outside project-02-casebook/
+- None outside project-02/
 
 -------------------------------------------------------------------------------
 Build Requirements
-From project-02-casebook/:
+From project-02/:
 
 gcc -Wall -Wextra -Wpedantic -std=c17 -g -o casebook src/main.c
 

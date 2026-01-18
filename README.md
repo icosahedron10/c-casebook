@@ -1,6 +1,6 @@
 # c-casebook: Intro to C with Beej
 
-A self-directed, introduction to C focused on writing correct, reviewable programs and iterating them through increasingly realistic constraints.
+A self-directed, introduction to C focused on writing correct, reviewable programs and iterating them through increasingly realistic constraints. Ultimately, I want to take GIOS soon and this project serves as my preparation.
 
 This repo pairs two things:
 

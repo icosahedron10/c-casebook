@@ -33,7 +33,7 @@ Everything from Project 6 must still work exactly as before:
 Directory Layout (Exact)
 Create a new, isolated folder:
 
-project-07-casebook/
+project-07/
   README.md
   Makefile
   src/
@@ -67,19 +67,19 @@ Rules
 -------------------------------------------------------------------------------
 Create / Modify List
 Create:
-- project-07-casebook/README.md
-- project-07-casebook/Makefile
-- project-07-casebook/src/* (same set as Project 6)
-- project-07-casebook/data/fixtures/clients.txt
-- project-07-casebook/data/fixtures/transactions.txt
-- project-07-casebook/data/runtime/ (directory)
+- project-07/README.md
+- project-07/Makefile
+- project-07/src/* (same set as Project 6)
+- project-07/data/fixtures/clients.txt
+- project-07/data/fixtures/transactions.txt
+- project-07/data/runtime/ (directory)
 
 Modify:
-- None outside project-07-casebook/
+- None outside project-07/
 
 -------------------------------------------------------------------------------
 Build Requirements
-From project-07-casebook/:
+From project-07/:
 
 make
 make clean

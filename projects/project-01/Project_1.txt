@@ -23,17 +23,10 @@ repo-root/
   Readings.txt
   Wireframes.txt
   projects/
-    project-01-casebook/
-    project-02-casebook/
+    project-01/
+    project-02/
     ...
-    project-07-casebook/
-
-Isolation rule
-- Build and run commands are executed from the project folder you are currently working in.
-- Do not rely on code/files from other project folders when building/running this project.
-
-Git rule
-- Do not commit build artifacts (executables, .o, etc.). Use a repo-level .gitignore.
+    project-07/
 
 -------------------------------------------------------------------------------
 Prerequisites (Readings)
@@ -66,27 +59,27 @@ Out of scope for Project 1
 Directory Layout (Exact)
 You must create the following directory structure:
 
-project-01-casebook/
+project-01/
   README.md
   src/
     main.c
 
 Rules
-- No additional files or directories inside project-01-casebook/.
+- No additional files or directories inside project-01/.
 - (Repo-level files like Readings.txt/Wireframes.txt live above projects/.)
 
 -------------------------------------------------------------------------------
 Create / Modify List
 Create:
-- project-01-casebook/README.md
-- project-01-casebook/src/main.c
+- project-01/README.md
+- project-01/src/main.c
 
 Modify:
 - None (this is the first project)
 
 -------------------------------------------------------------------------------
 Build Requirements
-From the project-01-casebook/ directory, this command must succeed:
+From the project-01/ directory, this command must succeed:
 
 gcc -Wall -Wextra -Wpedantic -std=c11 -g -o casebook src/main.c
 

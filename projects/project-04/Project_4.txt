@@ -39,7 +39,7 @@ Out of scope (explicit)
 Directory Layout (Exact)
 Create a new, isolated folder:
 
-project-04-casebook/
+project-04/
   README.md
   src/
     main.c
@@ -65,18 +65,18 @@ Allowed shortcut
 -------------------------------------------------------------------------------
 Create / Modify List
 Create:
-- project-04-casebook/README.md
-- project-04-casebook/src/main.c
-- project-04-casebook/data/fixtures/clients.txt
-- project-04-casebook/data/fixtures/transactions.txt
-- project-04-casebook/data/runtime/  (directory)
+- project-04/README.md
+- project-04/src/main.c
+- project-04/data/fixtures/clients.txt
+- project-04/data/fixtures/transactions.txt
+- project-04/data/runtime/  (directory)
 
 Modify:
-- None outside project-04-casebook/
+- None outside project-04/
 
 -------------------------------------------------------------------------------
 Build Requirements
-From project-04-casebook/:
+From project-04/:
 
 gcc -Wall -Wextra -Wpedantic -std=c17 -g -o casebook src/main.c
 
